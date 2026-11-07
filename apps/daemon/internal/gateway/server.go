@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"zenf/internal/domain"
+	"zenf/internal/runner"
 )
 
 //go:embed all:web_dist
@@ -55,6 +56,7 @@ type Server struct {
 	mux        *http.ServeMux
 	httpServer *http.Server
 	webFS      fs.FS
+	runnerMgr  *runner.Manager
 }
 
 // NewServer constructs a new Gateway Server.
@@ -71,10 +73,16 @@ func NewServer(storage Storage) *Server {
 		done:       make(chan struct{}),
 		mux:        http.NewServeMux(),
 		webFS:      webFS,
+		runnerMgr:  runner.NewManager(),
 	}
 
 	s.setupRoutes()
 	return s
+}
+
+// RunnerManager returns the runner manager instance attached to the server.
+func (s *Server) RunnerManager() *runner.Manager {
+	return s.runnerMgr
 }
 
 // setupRoutes registers all HTTP and SSE endpoints using Go 1.22+ routing syntax.
@@ -122,6 +130,7 @@ func (s *Server) setupRoutes() {
 	s.mux.HandleFunc("PATCH /api/v1/agents/{slug}", s.handleUpdateAgent)
 	s.mux.HandleFunc("DELETE /api/v1/agents/{slug}", s.handleDeleteAgent)
 	s.mux.HandleFunc("GET /api/v1/sessions", s.handleListSessions)
+	s.mux.HandleFunc("GET /api/v1/sessions/{id}/terminal", s.handleSessionTerminal)
 
 	// Cross-entity search
 	s.mux.HandleFunc("GET /api/v1/search", s.handleSearch)

@@ -10,9 +10,11 @@ require (
 )
 
 require (
+	github.com/creack/pty v1.1.24 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/jsonschema-go v0.4.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/ncruces/go-sqlite3-wasm/v6 v6.4.35401 // indirect
 	github.com/ncruces/julianday v1.0.0 // indirect

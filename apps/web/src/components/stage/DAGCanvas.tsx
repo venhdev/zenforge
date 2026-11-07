@@ -22,6 +22,7 @@ interface DAGCanvasProps {
   tasks: Task[]
   selectedTaskId: string | null
   onSelectTask: (task: Task, source?: 'sidebar' | 'canvas' | 'dock') => void
+  onOpenTerminal?: (task: Task) => void
   focusTarget?: { id: string; timestamp: number } | null
 }
 
@@ -291,6 +292,7 @@ const DAGCanvasInner: React.FC<DAGCanvasProps> = ({
   tasks,
   selectedTaskId,
   onSelectTask,
+  onOpenTerminal,
   focusTarget,
 }) => {
   const [viewMode, setViewMode] = useState<'dag' | 'swimlanes'>('dag')
@@ -369,6 +371,7 @@ const DAGCanvasInner: React.FC<DAGCanvasProps> = ({
           isDimmed,
           blastDepth: blastDepthValue,
           onSelect: (t: Task) => onSelectTask(t, 'canvas'),
+          onOpenTerminal,
         },
       }
     })

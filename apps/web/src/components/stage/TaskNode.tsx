@@ -4,6 +4,7 @@ import {
   Zap,
   Bot,
   Crown,
+  Terminal as TerminalIcon,
 } from 'lucide-react'
 import type { Task } from '../../types/contracts'
 import { TASK_STATUS_CONFIG } from './taskStatusTheme'
@@ -17,6 +18,7 @@ export interface TaskNodeData {
   isDimmed?: boolean
   blastDepth?: number
   onSelect: (task: Task) => void
+  onOpenTerminal?: (task: Task) => void
 }
 
 function getBlastOpacity(isBlastRadius?: boolean, blastDepth?: number): string {
@@ -104,6 +106,20 @@ export const TaskNode = memo(({ data }: { data: TaskNodeData }) => {
               <Crown className="h-2.5 w-2.5 text-amber-400 shrink-0" />
               <span className="truncate">{task.orchestrator_id}</span>
             </div>
+          )}
+          {task.claim_session_id && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                data.onOpenTerminal?.(task)
+              }}
+              className="mt-1 flex w-full items-center justify-center gap-1 rounded bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-300 hover:text-white px-2 py-0.5 text-[10px] font-mono border border-zinc-700/50 transition cursor-pointer"
+              title="Open Live Terminal"
+            >
+              <TerminalIcon className="h-2.5 w-2.5 text-emerald-400" />
+              <span>&gt;_ Terminal ({task.claim_session_id.slice(0, 6)})</span>
+            </button>
           )}
         </div>
       )}

@@ -46,7 +46,7 @@ func NewServer(store Storage) *Server {
 	}
 
 	s := &Server{
-		mcpServer: server.NewMCPServer("zenf", "0.3.2", server.WithToolCapabilities(true)),
+		mcpServer: server.NewMCPServer("zenf", "0.3.3", server.WithToolCapabilities(true)),
 		store:     store,
 	}
 	s.registerTools()

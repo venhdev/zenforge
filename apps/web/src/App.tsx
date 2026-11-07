@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { Terminal as TerminalIcon } from 'lucide-react'
 import { HeaderBar, type CockpitView } from './components/header/HeaderBar'
 import { PlanTree } from './components/sidebar/PlanTree'
 import { DAGCanvas } from './components/stage/DAGCanvas'
@@ -8,6 +9,7 @@ import { ProjectsView } from './components/workspace/ProjectsView'
 import { DocsView } from './components/workspace/DocsView'
 import { AgentsView } from './components/workspace/AgentsView'
 import { ActivityView } from './components/workspace/ActivityView'
+import { TerminalConsole } from './components/terminal/TerminalConsole'
 import { useSSE } from './hooks/useSSE'
 import { useZenfAPI } from './hooks/useZenfAPI'
 import type { Plan, Project, Task, Artifact } from './types/contracts'
@@ -29,6 +31,13 @@ export default function App() {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [dockCollapsed, setDockCollapsed] = useState(false)
+
+  const [activeTerminalSession, setActiveTerminalSession] = useState<{
+    sessionId: string
+    taskTitle: string
+    mode?: 'HEADLESS' | 'INTERACTIVE'
+  } | null>(null)
+  const [terminalDrawerOpen, setTerminalDrawerOpen] = useState(false)
 
   const activePlanRef = useRef<Plan | null>(null)
   activePlanRef.current = activePlan
@@ -302,6 +311,17 @@ export default function App() {
     [tasks, handleSelectTask]
   )
 
+  const handleOpenTerminal = useCallback((task: Task) => {
+    if (task.claim_session_id) {
+      setActiveTerminalSession({
+        sessionId: task.claim_session_id,
+        taskTitle: task.title,
+        mode: 'HEADLESS',
+      })
+      setTerminalDrawerOpen(true)
+    }
+  }, [])
+
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-zinc-950 font-sans text-zinc-100">
       {/* 1. Header Bar with Plan CRUD & Active Worker Count */}
@@ -338,6 +358,7 @@ export default function App() {
             tasks={tasks}
             selectedTaskId={selectedTaskId}
             onSelectTask={handleSelectTask}
+            onOpenTerminal={handleOpenTerminal}
             focusTarget={focusTarget}
           />
 
@@ -387,6 +408,43 @@ export default function App() {
           <GlobalEnvView onFetchEnv={fetchGlobalEnv} />
         </div>
       )}
+
+      {/* 3. Bottom Terminal Drawer (Slide-up live streaming console) */}
+      {terminalDrawerOpen && (
+        <div className="h-72 border-t border-zinc-800 flex flex-col bg-zinc-950 shrink-0 isolate [transform:translateZ(0)]">
+          <TerminalConsole
+            sessionId={activeTerminalSession?.sessionId ?? null}
+            taskTitle={activeTerminalSession?.taskTitle}
+            mode={activeTerminalSession?.mode ?? 'HEADLESS'}
+            isDrawer={true}
+            onClose={() => setTerminalDrawerOpen(false)}
+          />
+        </div>
+      )}
+
+      {/* 4. Bottom Status & Terminal Drawer Toggle Bar */}
+      <footer className="flex h-6 items-center justify-between border-t border-zinc-800/80 bg-zinc-900/90 px-3 text-[11px] text-zinc-400 shrink-0 select-none">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setTerminalDrawerOpen(!terminalDrawerOpen)}
+            className={`flex items-center gap-1.5 px-2 py-0.5 rounded transition cursor-pointer ${
+              terminalDrawerOpen ? 'bg-zinc-800 text-zinc-100' : 'hover:bg-zinc-800/70 hover:text-zinc-200'
+            }`}
+            title="Toggle Live Terminal Drawer"
+          >
+            <TerminalIcon className="h-3 w-3 text-emerald-400" />
+            <span className="font-semibold text-[10px]">Terminal</span>
+            {activeTerminalSession && (
+              <span className="font-mono text-[10px] text-zinc-400 truncate max-w-[200px]">
+                ({activeTerminalSession.taskTitle})
+              </span>
+            )}
+          </button>
+        </div>
+        <div className="flex items-center gap-2 font-mono text-[10px] text-zinc-500">
+          <span>zenf daemon</span>
+        </div>
+      </footer>
     </div>
   )
 }

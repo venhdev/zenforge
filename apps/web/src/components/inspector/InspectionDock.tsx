@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef, memo } from 'react'
-import { ChevronRight, ChevronLeft, Layers, Activity, Zap } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Layers, Activity, Zap, Terminal as TerminalIcon } from 'lucide-react'
 import { TaskSpecPane } from './TaskSpecPane'
 import { ExecutionTracePane } from './ExecutionTracePane'
 import { ClaimPacketPane } from './ClaimPacketPane'
+import { TerminalConsole } from '../terminal/TerminalConsole'
 import type { Task, Artifact, ContextPacket } from '../../types/contracts'
 import type { ApiResult } from '../../hooks/useZenfAPI'
 
-type DockLens = 'spec' | 'trace' | 'packet'
+type DockLens = 'spec' | 'trace' | 'packet' | 'terminal'
 
 interface InspectionDockProps {
   selectedTask: Task | null
@@ -94,6 +95,7 @@ export const InspectionDockComponent: React.FC<InspectionDockProps> = ({
     { key: 'spec', label: 'Spec', icon: <Layers className="h-3 w-3" /> },
     { key: 'trace', label: 'Execution & Trace', icon: <Activity className="h-3 w-3" /> },
     { key: 'packet', label: 'Claim Packet ⚡', icon: <Zap className="h-3 w-3" /> },
+    { key: 'terminal', label: 'Terminal >_', icon: <TerminalIcon className="h-3 w-3" /> },
   ]
 
   return (
@@ -159,6 +161,27 @@ export const InspectionDockComponent: React.FC<InspectionDockProps> = ({
               loading={packetLoading}
               onFetch={() => selectedTask && doFetchPacket(selectedTask.id)}
             />
+          </div>
+        )}
+
+        {activeLens === 'terminal' && (
+          <div className="h-full overflow-hidden">
+            {selectedTask?.claim_session_id ? (
+              <TerminalConsole
+                sessionId={selectedTask.claim_session_id}
+                taskTitle={selectedTask.title}
+                mode="HEADLESS"
+                isDrawer={false}
+              />
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center p-6 text-center text-zinc-500">
+                <TerminalIcon className="h-8 w-8 text-zinc-700 mb-2" />
+                <p className="text-xs font-semibold text-zinc-400">No Terminal Session</p>
+                <p className="mt-1 text-[11px] text-zinc-600 max-w-xs">
+                  This task does not currently have an attached worker process session.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
