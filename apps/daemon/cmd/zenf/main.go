@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"os"
@@ -21,6 +22,12 @@ var (
 	defaultPort   int
 	defaultDBPath string
 	defaultURL    string
+)
+
+// Installation defaults shared by `daemon start` and the post-update restart.
+const (
+	defaultDaemonPort   = 1123
+	defaultDaemonDBPath = "~/.zenforge/state.db"
 )
 
 // cliHTTPClient bounds every CLI request so a wedged daemon fails fast instead
@@ -174,7 +181,43 @@ func getDatabaseStorage(dbPath string) DatabaseStorageInfo {
 	return info
 }
 
-func restartActiveDaemonIfRunning(port int, dbPath string) {
+// waitForProcessExit polls until the process is gone or the timeout elapses.
+func waitForProcessExit(process *os.Process, timeout time.Duration) bool {
+	deadline := time.Now().Add(timeout)
+	for {
+		if err := process.Signal(syscall.Signal(0)); err != nil {
+			return true
+		}
+		if time.Now().After(deadline) {
+			return false
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
+// daemonRestartArgs builds the detached start command. `-f` reclaims the port
+// if the previous daemon has not released it yet.
+func daemonRestartArgs(port int, dbPath string) []string {
+	if port == 0 {
+		port = defaultDaemonPort
+	}
+	if dbPath == "" {
+		dbPath = defaultDaemonDBPath
+	}
+	return []string{
+		"daemon", "start", "-d", "-f",
+		"--port", strconv.Itoa(port),
+		"--db", dbPath,
+	}
+}
+
+// restartActiveDaemonIfRunning stops the background daemon (if any) and starts
+// the freshly installed binary again.
+//
+// execPath must be the installed path captured before ReplaceBinary: after the
+// swap, the running process's executable resolves to the removed `.old` inode,
+// so os.Executable() can no longer be launched.
+func restartActiveDaemonIfRunning(port int, dbPath, execPath string) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return
@@ -198,24 +241,35 @@ func restartActiveDaemonIfRunning(port int, dbPath string) {
 
 	fmt.Printf("Restarting active ZenForge background daemon (PID: %d)...\n", pid)
 	_ = process.Signal(syscall.SIGTERM)
-	time.Sleep(500 * time.Millisecond)
+	if !waitForProcessExit(process, 5*time.Second) {
+		fmt.Println("  ⚠ Previous daemon is still shutting down; forcing port reclaim.")
+	}
+	// A stale pid file would make `daemon start` believe the old process is alive.
+	_ = os.Remove(pidFile)
 
-	execPath, err := os.Executable()
-	if err != nil {
-		execPath = "zenf"
-	}
-	args := []string{"daemon", "start", "-d"}
-	if port != 0 {
-		args = append(args, "--port", strconv.Itoa(port))
-	}
-	if dbPath != "" {
-		args = append(args, "--db", dbPath)
+	if execPath == "" {
+		if resolved, err := os.Executable(); err == nil {
+			execPath = resolved
+		} else {
+			execPath = "zenf"
+		}
 	}
 
-	cmd := exec.Command(execPath, args...)
-	if err := cmd.Start(); err == nil {
-		fmt.Println("  ✔ Background daemon restarted successfully.")
+	cmd := exec.Command(execPath, daemonRestartArgs(port, dbPath)...)
+	var output bytes.Buffer
+	cmd.Stdout = &output
+	cmd.Stderr = &output
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("  ✖ Failed to restart daemon: %v\n", err)
+		if trimmed := strings.TrimSpace(output.String()); trimmed != "" {
+			fmt.Printf("    %s\n", strings.ReplaceAll(trimmed, "\n", "\n    "))
+		}
+		return
 	}
+	if trimmed := strings.TrimSpace(output.String()); trimmed != "" {
+		fmt.Printf("    %s\n", strings.ReplaceAll(trimmed, "\n", "\n    "))
+	}
+	fmt.Println("  ✔ Background daemon restarted successfully.")
 }
 
 func main() {

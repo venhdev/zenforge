@@ -58,8 +58,8 @@ func newDaemonCmd() *cobra.Command {
 
 	daemonStartCmd.Flags().BoolVarP(&daemonDetach, "detach", "d", false, "Run daemon in background and return terminal")
 	daemonStartCmd.Flags().BoolVarP(&daemonForce, "force", "f", false, "Force terminate previous zenf process occupying the port")
-	daemonStartCmd.Flags().IntVarP(&defaultPort, "port", "p", 1123, "Port to bind the HTTP/SSE gateway")
-	daemonStartCmd.Flags().StringVar(&defaultDBPath, "db", "~/.zenforge/state.db", "Path to SQLite WAL database")
+	daemonStartCmd.Flags().IntVarP(&defaultPort, "port", "p", defaultDaemonPort, "Port to bind the HTTP/SSE gateway")
+	daemonStartCmd.Flags().StringVar(&defaultDBPath, "db", defaultDaemonDBPath, "Path to SQLite WAL database")
 
 	daemonStopCmd := &cobra.Command{
 		Use:   "stop",

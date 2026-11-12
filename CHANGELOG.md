@@ -5,6 +5,18 @@ All notable changes to ZenForge are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-11-12
+
+### Fixed
+
+- `zenf update` restarts the background daemon again. The previous build looked
+  up `os.Executable()` **after** replacing the binary, which resolves to the
+  already-deleted `.old` inode, so the launch failed silently and left the
+  daemon stopped. The installed path is now captured before the swap, the old
+  process is awaited instead of a fixed 500 ms sleep, the stale PID file is
+  removed, and `daemon start -f` reclaims the port. Startup failures now surface
+  the daemon's own output instead of passing silently.
+
 ## [0.1.0] - 2026-11-12
 
 Initial baseline. This release is a deliberate cold start: no pre-0.1.0 history

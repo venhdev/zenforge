@@ -113,7 +113,7 @@ Verifies SHA-256 checksums and performs atomic in-place binary replacement witho
 
 			fmt.Printf("✔ Successfully updated zenf to %s at %s\n", release.TagName, execPath)
 
-			restartActiveDaemonIfRunning(defaultPort, defaultDBPath)
+			restartActiveDaemonIfRunning(defaultPort, defaultDBPath, execPath)
 			return nil
 		},
 	}

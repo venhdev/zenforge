@@ -288,3 +288,35 @@ func TestProcessInfo_DetectAndRejectExternalProcess(t *testing.T) {
 	}
 }
 
+func TestWaitForProcessExit(t *testing.T) {
+	cmd := exec.Command("sleep", "10")
+	if err := cmd.Start(); err != nil {
+		t.Fatalf("failed to start helper process: %v", err)
+	}
+	if waitForProcessExit(cmd.Process, 50*time.Millisecond) {
+		_ = cmd.Process.Kill()
+		t.Fatal("expected the helper process to still be running")
+	}
+	_ = cmd.Process.Kill()
+	_, _ = cmd.Process.Wait()
+	if !waitForProcessExit(cmd.Process, 2*time.Second) {
+		t.Fatal("expected the helper process to be gone")
+	}
+}
+
+func TestDaemonRestartArgs(t *testing.T) {
+	got := daemonRestartArgs(0, "")
+	want := []string{
+		"daemon", "start", "-d", "-f",
+		"--port", "1123",
+		"--db", "~/.zenforge/state.db",
+	}
+	if strings.Join(got, " ") != strings.Join(want, " ") {
+		t.Fatalf("default args = %v, want %v", got, want)
+	}
+
+	got = daemonRestartArgs(9099, "/tmp/custom.db")
+	if strings.Join(got, " ") != "daemon start -d -f --port 9099 --db /tmp/custom.db" {
+		t.Fatalf("custom args = %v", got)
+	}
+}
