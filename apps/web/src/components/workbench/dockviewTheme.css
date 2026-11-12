@@ -1,0 +1,65 @@
+@import 'dockview-react/dist/styles/dockview.css';
+
+/* ZenForge Dark Glassmorphism Theme for Dockview */
+.dockview-theme-zenforge {
+  --dv-drag-over-background-color: rgba(139, 92, 246, 0.15);
+  --dv-drag-over-border-color: rgba(139, 92, 246, 0.6);
+  --dv-tabs-and-actions-container-background-color: #09090b;
+  --dv-tabs-and-actions-container-font-size: 11px;
+  --dv-tabs-and-actions-container-height: 32px;
+  --dv-activegroup-visiblepanel-tab-background-color: #18181b;
+  --dv-activegroup-visiblepanel-tab-color: #fafafa;
+  --dv-activegroup-hiddenpanel-tab-background-color: transparent;
+  --dv-activegroup-hiddenpanel-tab-color: #a1a1aa;
+  --dv-inactivegroup-visiblepanel-tab-background-color: #18181b;
+  --dv-inactivegroup-visiblepanel-tab-color: #d4d4d8;
+  --dv-inactivegroup-hiddenpanel-tab-background-color: transparent;
+  --dv-inactivegroup-hiddenpanel-tab-color: #71717a;
+  --dv-tab-divider-color: #27272a;
+  --dv-separator-border: #27272a;
+  --dv-paneview-active-outline-color: #8b5cf6;
+  --dv-icon-hover-background-color: rgba(255, 255, 255, 0.08);
+  --dv-tab-close-icon-size: 8px;
+  background-color: #09090b;
+  color: #f4f4f5;
+  height: 100%;
+  width: 100%;
+}
+
+/* Compact Tab Close Button (X) */
+.dockview-theme-zenforge .dv-tab .dv-default-tab .dv-default-tab-action {
+  padding: 3px;
+  border-radius: 3px;
+  opacity: 0.65;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.dockview-theme-zenforge .dv-tab .dv-default-tab .dv-default-tab-action:hover {
+  opacity: 1;
+  border-radius: 3px;
+  background-color: var(--dv-icon-hover-background-color);
+}
+
+.dockview-theme-zenforge .dv-tab .dv-default-tab .dv-default-tab-action .dv-svg {
+  width: var(--dv-tab-close-icon-size);
+  height: var(--dv-tab-close-icon-size);
+}
+
+.dockview-theme-zenforge .dockview-splitview-container > .splitview-container > .sash-container > .sash {
+  background-color: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.dockview-theme-zenforge .dockview-splitview-container > .splitview-container > .sash-container > .sash:hover,
+.dockview-theme-zenforge .dockview-splitview-container > .splitview-container > .sash-container > .sash.active {
+  background-color: rgba(139, 92, 246, 0.6) !important;
+}
+
+.dockview-theme-zenforge .tab {
+  border-top: 2px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.dockview-theme-zenforge .tab.active-tab {
+  border-top: 2px solid #8b5cf6;
+}

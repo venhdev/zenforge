@@ -1,1 +1,30 @@
 .DS_Store
+tmp-skillshare-workspaces
+.system
+tmp
+
+.env
+**/.env
+.env.*
+!.env.example
+node_modules/
+# package-lock.json
+# pnpm-lock.yaml
+venv/
+__pycache__/
+
+# ZenForge Agent Privacy
+.agents/scratch/
+.agents/tasks/
+.agents/skills/
+skills-lock.json
+
+# ZenForge Apps Monorepo
+/bin/
+apps/daemon/bin/
+apps/daemon/tmp/
+apps/daemon/internal/gateway/web_dist/*
+!apps/daemon/internal/gateway/web_dist/.keep
+apps/web/node_modules/
+apps/web/dist/
+.agents/environment.md

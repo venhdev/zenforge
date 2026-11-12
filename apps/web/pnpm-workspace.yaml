@@ -1,0 +1,6 @@
+allowBuilds:
+  esbuild: true
+minimumReleaseAgeExclude:
+  - dockview-core@8.9.0
+  - dockview-react@8.9.0
+  - dockview@8.9.0
